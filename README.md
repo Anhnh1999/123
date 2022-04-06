@@ -22,7 +22,7 @@ hàm main của chương trình
 -biến `a2` là vị trí của input  
 -biến `a3` là input sau khi đã bị được encrypt  
 
-##### `shellcode 1`
+#### `shellcode 1`
 shellcode 1 encode input bằng cách xor
 ![](shellcode1.png)
 
