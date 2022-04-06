@@ -19,7 +19,7 @@ hàm main của chương trình
 
 #### hàm `dump_shellcode`
 -biến `a1` có thể là `1`, `2`, `3`, `4` là 4 giá trị của switch để xor ra shellcode trong 4 trường hợp, debug tại đây để dump ra 4 đoạn shellcode 
--biến `a2` là vị trí của input  
+--biến `a2` là vị trí của input  
 -biến `a3` là input sau khi đã bị được encrypt  
 
 #### `shellcode 1`
