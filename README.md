@@ -1,81 +1,56 @@
 load file vào ida32
 ### IDA
 hàm main của chương trình 
+
 ![](ida1.png)
-- hàm main yêu cầu input nhập vào là 2 tham số
-    + tham số thứ nhất là tên file nhập để truyền vào hàm api `CreateFileW`
-    + tham số thứ hai là input nhập vào 
-hàm main thực hiện mở file với api `CreateFileW` để gọi api `MapViewOfFile` và thay đổi  
-do có file ảnh `inside-the-mind-of-a-hacker-memory.bmp` nên tham số thứ nhất sẽ là `inside-the-mind-of-a-hacker-memory.bmp`
 
-- sau khi thực hiện gọi `MapViewOfFile` thì input thực hiện dịch bit để chuyển về mỗi 8 số nhị phân như sau:
-![](ida2.png)
+- hàm main có 1 đoạn code xảy ra `exception divide by zero` và một đoạn code không hợp lệ nên để thực thi được phải patch 2 đoạn này bằng lệnh `nop`
 
-- đoạn code check độ dài của input sau khi chuyển nhị phân tối thiểu là 0xF0 
-![](check1.png)
-![](check2.png)
-![](check3.png)
+![](raw1.png)
 
-- đoạn code chèn từng byte `0/1` nhị phân từ input vào trong khoảng mỗi 3 byte một bắt đầu từ `lpBaseAddress + 54`
-![](check4.png)
-![](check5.png)
-![](check6.png)
+- patch đoạn code 
 
-- từ đây có thể dump lại input ra từ file ảnh có sẵn 0xF0 byte `0/1`, mỗi byte cách nhau 3 byte 
+![](patch1.png)
 
-``` python
-a = []
-extract = []
-f = open("inside-the-mind-of-a-hacker-memory.bmp","rb")
-data = f.read()
 
-for i in range(54,54+720,3):
-    a.append(data[i])
-f.close()
 
-for i in range(0,len(a),8):
-    extract.append(''.join([str(x) for x in a[i:i+8]]))
-```
+#### hàm `DialogFunc` 
+- phân tích callback function `DialogFunc` của `DialogBoxParamA` 
 
-#### extract = `['01100110', '00110110', '10000110', '11100110', '11011110', '00100110', '11110110', '01110110', '00101110', '11111010', '01100110', '11110110', '01001110', '11100110', '10100110', '00101110', '11111010', '00101110', '00010110', '10100110', '11111010', '00101110', '01001110', '10100110', '10000110', '11001110', '10101110', '01001110', '10100110', '10111110']`
+##### với message `WM_INITDIALOG`, luồng thực thi sẽ gặp 3 kỹ thuật anti-debug `IsDebuggerPresent`, `NtGlobalFlag` và `ProcessHeap` trong `PEB`
 
-cuối cùng chỉ cần brute-force lại dịch bit để lấy lại được flag trong ảnh 
+![](raw2.png)
 
-``` python
-a = []
-extract = []
-f = open("inside-the-mind-of-a-hacker-memory.bmp","rb")
-data = f.read()
+- để debug được chương trình cần patch 3 kỹ thuật này lại 
+    + `IsDebuggerPresent` nhảy tới `ExitProcess` nếu sử dụng debugger  
+    + `NtGlobalFlag` kiểm tra nếu khác 0 thì sẽ nhảy tới `ExitProcess`
+    + `ProcessHeap` kiểm tra nếu `Flag` không có `HEAP_GROWABLE`(0x00000002) và nếu ForceFlags nếu khác 0 thì sẽ phát hiện debugger và nhảy tới `ExitProcess`  
+        []()https://www.apriorit.com/dev-blog/367-anti-reverse-engineering-protection-techniques-to-use-before-releasing-software#p4
+    + ngoài ra ở hàm `sub_401757` kiểm tra xem opcode từ `loc_4011AC` có bị thay đổi hay không, patch luôn hàm này để có thể patch code đoạn sau mà không bị `ExitProcess`
 
-for i in range(54,54+720,3):
-    a.append(data[i])
-f.close()
+- patch bằng cách `nop` đoạn code nhảy tới ExitProcess của cả 3 kỹ thuật 
 
-for i in range(0,len(a),8):
-    extract.append(''.join([str(x) for x in a[i:i+8]]))
+![](patch2.png)
 
-def brute(a1):
-    a = [0] * 8
-    v11 = 0 
-    for i in range(0x20, 0x7f):
-        ii = bin(i) 
-        aa = i
-        a[v11] = aa & 1 
-        a[v11 + 1] = (aa >> 1) & 1
-        a[v11 + 2] = (aa >> 2) & 1
-        a[v11 + 3] = (aa >> 3) & 1
-        a[v11 + 4] = (aa >> 4) & 1
-        a[v11 + 5] = (aa >> 5) & 1
-        a[v11 + 6] = (aa >> 6) & 1
-        a[v11 + 7] = (aa >> 7) & 1
-        b = format(aa, '08b')
-        c = a1
-        if  b == c:
-            #print(i)
-            return i  
+##### với message `WM_COMMAND`, luồng thực thi sẽ gặp kỹ thuật anti-debug sử dụng `NtQueryInformationProcess` với `ProcessInformationClass` là `ProcessDebugPort`
 
-for i in extract:
-    print(chr(brute(i[::-1])),end='')
-```
+![](raw3.png)
 
-`flag{dont_forget_the_treasure}`
+- `NtQueryInformationProcess`  sẽ chuyển `ProcessInformation` thành giá trị khác 0 nếu có debugger 
+- nếu `ProcessInformation` có giá trị khác 0 thì opcode tại `loc_4010A4` sẽ bị thay đổi bằng cách cộng từng byte với giá trị trong `ProcessInformation`
+- để debug được thì sau khi gọi hàm `NtQueryInformationProcess` thì sửa đổi giá trị trong `ProcessInformation` thành 0 để opcode trong `loc_4010A4` không đổi
+- luồng thực thi tiếp theo là đến lời gọi hàm `sub_401284`
+
+#### hàm `sub_401284`
+##### luồng thực thi đầu tiên sẽ gặp 1 kỹ thuật anti-debug sử dụng `OutputDebugStringA` và `GetLastError`
+- nếu chạy trên win vista trở xuống thì sẽ bị check debugger với 2 hàm `OutputDebugStringA` và `GetLastError` vì vậy có thể patch hoặc chạy trên windows phiên bản cao để bypass
+- sau kỹ thuật `OutputDebugStringA` và `GetLastError`, có thêm 1 kỹ thuật anti-debug sử dụng `NtSetInformationThread` gây crash chương trình nếu gặp breakpoint, bypass hàm này để tiếp tục debug chương trình 
+
+
+
+
+
+
+
+
+
