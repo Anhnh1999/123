@@ -1,13 +1,21 @@
 https://github.com/MicrosoftDocs/cpp-docs/blob/main/docs/windows/walkthrough-creating-windows-desktop-applications-cpp.md
 
+## WinMain 
 #### WNDCLASSEX struct 
 - RegisterClassEx: đăng ký lớp cửa sổ 
 - callback function `WndProc` - xử lý các message gửi tới cửa sổ   
 
 #### CreateWindowEx
-- tạo Windows 
+- tạo cửa sổ và message `WM_CREATE`
 
-#### callback function WndProc
+#### hiển thị cửa sổ 
+- sau khi tạo được cửa sổ thì sử dụng `ShowWindow` để hiển thị và `UpdateWindow` để gửi messeage `WM_PAINT` đến `WndProc`
+
+#### DispatchMessage
+- gửi message nhận được đến `WndProc`
+
+
+## callback function WndProc
 #### message WM_CREATE
 - khởi tạo vị trí của hình tròn theo kích thước của cửa sổ 
 - `GetClientRect` để lấy kích thước của cửa sổ, trả về 1 pointer RECT struct
