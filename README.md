@@ -20,3 +20,5 @@ tạo Windows
 #### message WM_DESTROY
 - xử lý khi cửa sổ bị destroy 
 - sử dụng hàm PostQuitMessage với `nExitCode = 0`
+#### DefWindowProc 
+- xử lý các messeage khác 
