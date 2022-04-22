@@ -5,7 +5,7 @@ https://github.com/MicrosoftDocs/cpp-docs/blob/main/docs/windows/walkthrough-cre
 - callback function `WndProc` - xử lý các message gửi tới cửa sổ   
 
 #### CreateWindowEx
-tạo Windows 
+- tạo Windows 
 
 #### callback function WndProc
 #### message WM_CREATE
