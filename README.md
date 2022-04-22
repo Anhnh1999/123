@@ -4,6 +4,7 @@ https://github.com/MicrosoftDocs/cpp-docs/blob/main/docs/windows/walkthrough-cre
 
 ### WNDCLASSEX struct 
 - RegisterClassEx: đăng ký window class
+- callback function `WndProc`
 
 ### CreateWindowEx
 tạo Windows 
