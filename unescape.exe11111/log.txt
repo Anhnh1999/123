@@ -1,0 +1,16 @@
+C:\ProgramData\Microsoft Malware ProtectionbOr
+
+tạo registry Computer\HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Run 
+""C:\Users\NHA\Microsoft Malware ProtectionbOr\unsecapp.exe" 7"
+
+
+chạy process với tham số là 6
+
+
+network ioc www.apple-net.com
+
+
+CXOnline::OlStartProc là TLS init 
+
+
+CXSoHttp::SoWorkProc HTTP request
