@@ -1,0 +1,4 @@
+tạo thư mục %userprofile%\AROTutorial Update Module
+	ghi file "%userprofile%\AROTutorial Update Module\arros.dll"
+
+có hành vi tạo registry Software\\Microsoft\\Windows\\CurrentVersion\\Run\\AROTutorial Update Module\arros.dll
