@@ -1,0 +1,71 @@
+#include "Windows.h"
+#include "iostream"
+#include "fstream"
+#include "string"
+#include "vector"  
+#include "Header.h"
+
+
+//https://stackoverflow.com/questions/25639874/recursively-searching-for-files-in-the-computer
+void FindFile(const std::wstring& directory, std::wofstream& file_stream)
+{
+    file_stream.open(directory + L"\\" + L"readme.txt");
+    file_stream << L"directory name: " << directory << L"\n";
+    std::wstring tmp = directory + L"\\*";
+    WIN32_FIND_DATAW file;
+    HANDLE search_handle = FindFirstFileW(tmp.c_str(), &file);
+    if (search_handle != INVALID_HANDLE_VALUE)
+    {
+        std::vector<std::wstring> directories;
+
+        do
+        {
+            if (file.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+            {
+                if ((!lstrcmpW(file.cFileName, L".")) || (!lstrcmpW(file.cFileName, L"..")))
+                    continue;
+
+            }
+            if (file.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+            {
+                tmp = directory + L"\\" + std::wstring(file.cFileName);
+                directories.push_back(tmp);
+            }
+            else
+            {
+                if ((lstrcmpW(file.cFileName, L"readme.txt")))
+                {
+                    tmp = directory + L"\\" + std::wstring(file.cFileName);
+                    file_stream << L"\t filename: " << std::wstring(file.cFileName) << L"\n";
+                }
+            }
+        } while (FindNextFileW(search_handle, &file));
+
+        FindClose(search_handle);
+        file_stream.close();
+        for (std::vector<std::wstring>::iterator iter = directories.begin(), end = directories.end(); iter != end; ++iter)
+            FindFile(*iter, file_stream);
+    }
+}
+
+int main()
+{
+    std::wofstream file_stream;
+    FindFile(L"C:\\Users\\nha\\Desktop\\test", file_stream);
+
+
+    HCRYPTKEY key = NULL;
+    HCRYPTPROV provider = 0;
+    unsigned char* publicKey{};
+    unsigned char* privateKey{};
+    generateKeys(&key,  provider, &publicKey, &privateKey);
+    
+    std::cout << publicKey;
+
+
+
+
+    return 0;
+
+}
+
